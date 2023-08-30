@@ -17,7 +17,7 @@ if [ $# -ge 1 ]; then
     fi
 else
     TEMP_FILES=/tmp/video-desktop-background
-    VIDEO_LOCATION=/home/$CURRENT_USER/Videos/temp.mp4
+    VIDEO_LOCATION=/home/$CURRENT_USER/Videos/temp.webm
 fi
 
 # check if the temporary files directory exists
@@ -46,14 +46,23 @@ if [ ! -r $VIDEO_LOCATION ]; then
     exit 1
 fi
 
-# check if the video is a video
-if [ ! $(file -b --mime-type $VIDEO_LOCATION) == "video/mp4" ]; then
-    echo "Video file is not a video."
-    exit 1
-fi
+# # check if the video is a video
+# if [ ! $(file -b --mime-type $VIDEO_LOCATION) == "video/mp4" ]; then
+#     echo "Video file is not a video."
+#     exit 1
+# fi
 
 # call ffmpeg to extract the frames
 resolution=$(xrandr | grep "current" | cut -d' ' -f8,10)
 read width height <<< $resolution
 echo "After assignment: width=$width, height=$height, temp_files=$TEMP_FILES, video_location=$VIDEO_LOCATION"
 ffmpeg -i $VIDEO_LOCATION -r 30 -f image2 $TEMP_FILES/%06d.jpg
+
+# cycle through the frames
+while true; do
+    for file in $TEMP_FILES/*.jpg; do
+        gsettings set org.gnome.desktop.background picture-uri "file://$file"
+        sleep 0.0333
+    done
+done
+```
